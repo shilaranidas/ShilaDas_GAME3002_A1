@@ -1,8 +1,10 @@
 using UnityEngine.Assertions;
 using UnityEngine;
+using TMPro;
 
 public class BallPhysics : MonoBehaviour
 {
+    public TMP_Text scoreValuetxt;
     [SerializeField]
     private float m_fInputDeltaVal = 0.001f;
     [SerializeField]
@@ -13,7 +15,7 @@ public class BallPhysics : MonoBehaviour
     private Vector3 m_vInitialVelocity = Vector3.zero;
     [SerializeField]
     private bool m_bDebugKickBall = false;
-
+    public int score = 0;
     private Rigidbody m_rb = null;
     private GameObject m_TargetDisplay = null;
 
@@ -22,33 +24,85 @@ public class BallPhysics : MonoBehaviour
     private float m_fDistanceToTarget = 0f;
 
     private Vector3 vDebugHeading;
-
+    Vector3 startPosition;
     // Start is called before the first frame update
     void Start()
     {
         m_rb = GetComponent<Rigidbody>();
         Assert.IsNotNull(m_rb, "Houston, we've got a problem here! No Rigidbody attached");
+        startPosition= transform.position;
+        //CreateTargetDisplay();
 
-        CreateTargetDisplay();
-        m_fDistanceToTarget = (m_TargetDisplay.transform.position - transform.position).magnitude;
     }
+    private void OnCollisionEnter(Collision collision)
+    {
+        
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        m_rb.velocity = Vector3.zero;
+        m_rb.MovePosition(startPosition);
+        //if (other.gameObject.tag=="Goal")
+        //{
+        //    //transform.position = GameObject.Find("BallStartPosition").transform.position;
+        //    this.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        //    //this.gameObject.GetComponent<Rigidbody>().velocity *= -1;
+        //    Debug.Log("goal");
+        //    score++;
+        //}
+        //if (other.gameObject.tag == "Boundary")
+        //{
+        //    //transform.position = GameObject.Find("BallStartPosition").transform.position;
+        //    //this.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        //    this.gameObject.GetComponent<Rigidbody>().velocity *= -1;
+        //    Debug.Log("boundary");
+        //   // score++;
+        //}
+        //if (other.gameObject.tag == "Wall")
+        //{
+        //    //transform.position = GameObject.Find("BallStartPosition").transform.position;
+        //    //this.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        //    this.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        //    Debug.Log("wall");
+        //    // score++;
+        //}
 
+    }
     // Update is called once per frame
     void Update()
     {
-        HandleUserInput();
-       // GetLandingPosition();
-        if (m_TargetDisplay != null && m_bIsGrounded)
+        if (Input.GetMouseButtonUp(0))
         {
-            m_TargetDisplay.transform.position = m_vTargetPos;
-            vDebugHeading = m_vTargetPos - transform.position;
+
+            m_rb = GetComponent<Rigidbody>();
+            m_rb.AddRelativeForce(0, 100, 1000);
         }
 
-        if (m_bDebugKickBall && m_bIsGrounded)
+        if (Input.GetMouseButtonUp(1))
         {
-            m_bDebugKickBall = false;
-            OnKickBall();
+            m_rb.velocity = Vector3.zero;
+            m_rb.MovePosition(startPosition);
         }
+
+        //Rotate ball with mouse
+        float mouseX = (Input.mousePosition.x / Screen.width) - 0.5f;
+        float mouseY = (Input.mousePosition.y / Screen.height) - 0.5f;
+        transform.localRotation = Quaternion.Euler(new Vector4(-1f * (mouseY * 180f), mouseX * 360f, transform.localRotation.z));
+        // HandleUserInput();
+        //// GetLandingPosition();
+        // if (m_TargetDisplay != null && m_bIsGrounded)
+        // {
+        //     m_TargetDisplay.transform.position = m_vTargetPos;
+        //     Debug.Log("change" + m_TargetDisplay.transform.position);
+        //     vDebugHeading = m_vTargetPos - transform.position;
+        // }
+
+        // if (m_bDebugKickBall && m_bIsGrounded)
+        // {
+        //     m_bDebugKickBall = false;
+        //     OnKickBall();
+        // }
+        // scoreValuetxt.text = score.ToString();
     }
 
     private void CreateTargetDisplay()
@@ -72,7 +126,8 @@ public class BallPhysics : MonoBehaviour
 
         // Vy = V * sin(theta)
         // Vz = V * cos(theta)
-
+        Debug.Log("Kick " + m_TargetDisplay.transform.position);
+        m_fDistanceToTarget = (m_TargetDisplay.transform.position - transform.position).magnitude;
         float fMaxHeight = m_TargetDisplay.transform.position.y;
         float fRange = (m_fDistanceToTarget * 2);
         float fTheta = Mathf.Atan((4 * fMaxHeight) / (fRange));
