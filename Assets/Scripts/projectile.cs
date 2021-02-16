@@ -31,6 +31,7 @@ public class projectile : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(BallLeft>0)
         LaunchProjectile();
         scoreValuetxt.text = score.ToString();
         ballLefttxt.text = BallLeft.ToString();
